@@ -1,7 +1,9 @@
 ---
 
-:index_txt: index.txt
+:input: index.txt
 
-:output_yml: output.yml
+:output:
+  :all_indexes:      out/all_indexes.yml
+  :indexes_per_book: out/indexes_per_book.yml
 
-:display_info: yes
+  :display_info: yes

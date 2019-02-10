@@ -1,5 +1,7 @@
 require 'pp'
 require 'yaml'
+require 'fileutils'
+
 DEFAULT_SETTING_YAML = 'setting.yml'
 
 module BigFakeCdIndex
@@ -86,6 +88,28 @@ module BigFakeCdIndex
     o
   end
 
+  def index_per_book(indexes)
+    realbooks = indexes.values.flatten.map{|i| i[:book]}.uniq.sort
+  
+    realbooks.map do |realbook|
+      containing_tunes = indexes
+        .select do |tune, books|
+          books.find{|book| book[:book] == realbook}
+        end
+        .map do |tune, books|
+          page = books.find{|book| book[:book] == realbook}[:page]
+          [page, tune]
+        end
+        .sort_by do |page, tune|
+          next page.to_i if page =~ /^[0-9]+$/
+          # appendix
+          10000 + page.sub('A', '').to_i
+        end
+    
+      [realbook, containing_tunes.to_h]
+    end.to_h
+  end
+  
   def display_info(indexes, io: $stdout)
     begin
       realbooks = indexes.values.flatten.map{|i| i[:book]}.uniq.sort
@@ -146,7 +170,6 @@ module BigFakeCdIndex
 end
 
 
-
 task default: :index_to_yaml 
 
 desc "index_to_yaml"
@@ -155,10 +178,22 @@ task :index_to_yaml, ['setting_yaml'] do |task, args|
 
   setting = YAML.load_file(setting_yaml)
 
-  indexes = BigFakeCdIndex.to_ruby_object(setting[:index_txt])
+  indexes = BigFakeCdIndex.to_ruby_object(setting[:input])
 
-  BigFakeCdIndex.display_info(indexes) if setting[:display_info]
+  output = setting[:output]
   
-  File.write(setting[:output_yml], indexes.to_yaml)
+  output[:display_info]&.tap do
+    BigFakeCdIndex.display_info(indexes)
+  end
+  
+  output[:all_indexes]&.tap do |all_indexes|
+    FileUtils.mkdir_p(File.dirname(all_indexes))
+    File.write(all_indexes, indexes.to_yaml)
+  end
+  
+  output[:indexes_per_book]&.tap do |indexes_per_book|
+    FileUtils.mkdir_p(File.dirname(indexes_per_book))
+    per_book = BigFakeCdIndex.index_per_book(indexes)
+    File.write(indexes_per_book, per_book.to_yaml)
+  end
 end
-
