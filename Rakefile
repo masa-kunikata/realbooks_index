@@ -101,28 +101,46 @@ task :index_to_yaml, ['setting_yaml'] do |task, args|
   puts 
   puts '-- books'
   puts books
+
   puts
   puts '-- tunes'
   puts "#{indexes.keys.size} tunes"
   
   puts 
-  puts '-- max_books_tune_titles'
-  
-  max_books_size = indexes.map{|k, v| v.size}.max
-  max_books_tune_titles = indexes.select{|k, v| v.size == max_books_size}.map{|k, _| k}
-  puts max_books_tune_titles
-  puts '----'
+  begin
+    puts '-- many_books_tune_titles'
+    
+    max_books_size = indexes.map{|k, v| v.size}.max
+    many_books_tune_titles = indexes
+      .select{|k, v| max_books_size - 2 < v.size}
+      .sort_by{|k, v| -v.size}
+      .map{|title, books| "#{title} (#{books.size} books)"}
+    puts many_books_tune_titles
+    puts '--------'
+  end
   
   puts 
-  puts '-- longest_tune_titles'
+  begin
+    puts '-- long_tune_titles'
+    
+    longest_title_size = indexes.keys.map{|t| t.size}.max
+    long_tune_titles = indexes.keys
+      .select{|t| longest_title_size - 15 < t.size}
+      .sort_by{|t| -t.size}
+    puts long_tune_titles
+    puts '--------'
+  end
   
-  longest_title_size = indexes.keys.map{|t| t.size}.max
-  longest_tune_titles = indexes.keys.find{|t| t.size == longest_title_size}
-  puts longest_tune_titles
-  puts '----'
-  
-  
-  File.write(setting[:output_yml], indexes.to_yaml)
+  puts 
+  begin
+    puts '-- short_tune_titles'
 
+    shortest_title_size = indexes.keys.map{|t| t.size}.min
+    short_tune_titles = indexes.keys.select{|t| shortest_title_size == t.size}
+    puts short_tune_titles
+    puts '--------'
+  end
+
+  File.write(setting[:output_yml], indexes.to_yaml)
 end
 
