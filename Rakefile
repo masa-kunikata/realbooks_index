@@ -1,10 +1,8 @@
-
+require 'pp'
 require 'yaml'
 DEFAULT_SETTING_YAML = 'setting.yml'
 
-
 module BigFakeCdIndex
-  module_function
 
   BOOKS = %w<
     Colorado
@@ -27,22 +25,25 @@ module BigFakeCdIndex
   
   FIRST_BOOK_REGEX  = /
     \A
-    (?<tune>[^.].+?)                                  # tune title
-    ([ ]|([ ]\.[ ])|([ ]\.\.[ ])|([ ]?(\.){3,}[ ]?))  # delimiter
-    (?<book>#{BOOKS * '|'}?)                         # book title
+    (?<tune>[^.].+?)                    # tune title
+    ([ ]|[ ]\.{1,2}[ ]|[ ]?\.{3,}[ ]?)  # delimiter
+    (?<book>#{BOOKS * '|'}?)            # book title
     [ ]
-    (?<page>[A-Za-z0-9]+?)                            # page
-    \Z
+    (?<page>[A0-9]+?)                   # page
+    \Z                                  # before new line
   /x
+
   CONTINUED_BOOK_REGEX  = /
     \A
     \.+[ ]?                   # delimiter
     (?<book>#{BOOKS * '|'}?)  # book title
     [ ]
-    (?<page>[A-Za-z0-9]+?)    # page
-    \Z
+    (?<page>[A0-9]+?)         # page
+    \Z                        # before new line
   /x
   
+  module_function
+
   def to_ruby_object(index_txt)
     o = {}
     
@@ -85,7 +86,66 @@ module BigFakeCdIndex
     o
   end
 
+  def display_info(indexes, io: $stdout)
+    begin
+      realbooks = indexes.values.flatten.map{|i| i[:book]}.uniq.sort
+      io.puts 
+      io.puts '-- realbooks'
+      io.puts realbooks
+
+      io.puts
+      io.puts '-- tunes'
+      io.puts "#{indexes.keys.size} tunes"
+    end
+
+    begin
+      io.puts 
+      io.puts '-- many_books_tune_titles'
+      
+      max_books_size = indexes.map{|k, v| v.size}.max
+      many_books_tune_titles = indexes
+        .select{|k, v| max_books_size - 2 < v.size}
+        .sort_by{|k, v| -v.size}
+        .map{|title, books| "#{title} (#{books.size} books)"}
+      io.puts many_books_tune_titles
+      io.puts '--------'
+    end
+
+    begin
+      io.puts 
+      io.puts '-- long_tune_titles'
+      
+      longest_title_size = indexes.keys.map{|t| t.size}.max
+      long_tune_titles = indexes.keys
+        .select{|t| longest_title_size - 15 < t.size}
+        .sort_by{|t| -t.size}
+      io.puts long_tune_titles
+      io.puts '--------'
+    end
+
+    begin
+      io.puts 
+      io.puts '-- short_tune_titles'
+
+      shortest_title_size = indexes.keys.map{|t| t.size}.min
+      short_tune_titles = indexes.keys.select{|t| shortest_title_size == t.size}
+      io.puts short_tune_titles
+      io.puts '--------'
+    end
+
+    begin
+      io.puts 
+      io.puts '-- no number pages'
+
+      no_number_pages = indexes.values.flatten.map{|i| i[:page]}.select{|page| page =~ /[a-z]/i}
+      no_number_page_include = indexes.select{|k, values| values.find{|v| no_number_pages.include?(v[:page])}}
+      io.puts no_number_page_include.pretty_inspect
+      io.puts '--------'
+    end
+  end
 end
+
+
 
 task default: :index_to_yaml 
 
@@ -94,53 +154,11 @@ task :index_to_yaml, ['setting_yaml'] do |task, args|
   setting_yaml = args[:setting_yaml] || DEFAULT_SETTING_YAML
 
   setting = YAML.load_file(setting_yaml)
-  
+
   indexes = BigFakeCdIndex.to_ruby_object(setting[:index_txt])
-  
-  books = indexes.values.flatten.map{|i| i[:book]}.uniq.sort
-  puts 
-  puts '-- books'
-  puts books
 
-  puts
-  puts '-- tunes'
-  puts "#{indexes.keys.size} tunes"
+  BigFakeCdIndex.display_info(indexes) if setting[:display_info]
   
-  puts 
-  begin
-    puts '-- many_books_tune_titles'
-    
-    max_books_size = indexes.map{|k, v| v.size}.max
-    many_books_tune_titles = indexes
-      .select{|k, v| max_books_size - 2 < v.size}
-      .sort_by{|k, v| -v.size}
-      .map{|title, books| "#{title} (#{books.size} books)"}
-    puts many_books_tune_titles
-    puts '--------'
-  end
-  
-  puts 
-  begin
-    puts '-- long_tune_titles'
-    
-    longest_title_size = indexes.keys.map{|t| t.size}.max
-    long_tune_titles = indexes.keys
-      .select{|t| longest_title_size - 15 < t.size}
-      .sort_by{|t| -t.size}
-    puts long_tune_titles
-    puts '--------'
-  end
-  
-  puts 
-  begin
-    puts '-- short_tune_titles'
-
-    shortest_title_size = indexes.keys.map{|t| t.size}.min
-    short_tune_titles = indexes.keys.select{|t| shortest_title_size == t.size}
-    puts short_tune_titles
-    puts '--------'
-  end
-
   File.write(setting[:output_yml], indexes.to_yaml)
 end
 
