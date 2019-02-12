@@ -44,45 +44,54 @@ module BigFakeCdIndex
     \Z                        # before new line
   /x
   
+  DUPLICATE_TUNE_TITLE = "…"
+  
+  
   module_function
 
-  def to_ruby_object(index_txt)
+  def to_ruby_object(file_io)
     o = {}
     
-    title_fragment = nil
+    seperated_tune_title = nil
     current_tune = nil
+    versions_tune = nil
     
-    File.open(index_txt, "r:utf-8") do |f|
-      while line = f.gets
-        case line
-        when LETTER_REGEX
-          next
+    tune_title_of = ->do
+      return current_tune if current_tune == versions_tune
+      current_tune.sub(DUPLICATE_TUNE_TITLE, versions_tune)
+    end
+    
+    while line = file_io.gets
+      case line
+      when LETTER_REGEX
+        next
 
-        when PAGE_DELIM_REGEX
-          next
+      when PAGE_DELIM_REGEX
+        next
 
-        when FIRST_BOOK_REGEX
-          tune = "#{title_fragment}#{$~['tune']}"
-          title_fragment = nil
-          
-          book = $~['book']
-          page = $~['page']
-          
-          current_tune = tune
-          o[tune] = [{book: book.gsub(' ', ''), page: page}]
-
-        when CONTINUED_BOOK_REGEX
-          raise 'NO current_tune!' unless current_tune
+      when FIRST_BOOK_REGEX
+        tune = $~['tune']
+        book = $~['book']
+        page = $~['page']
         
-          book = $~['book']
-          page = $~['page']
-          
-          o[current_tune] << {book: book.gsub(' ', ''), page: page}
-          
-        else
-          # should be the first fragment of a long title
-          title_fragment = line.chomp('') + ' '
-        end
+        current_tune = "#{seperated_tune_title}#{tune}"
+        seperated_tune_title = nil
+        
+        versions_tune = current_tune unless current_tune =~ /^#{DUPLICATE_TUNE_TITLE}/
+        
+        o[tune_title_of[]] = [{book: book.gsub(' ', ''), page: page}]
+
+      when CONTINUED_BOOK_REGEX
+        raise 'NO current_tune!' unless current_tune
+      
+        book = $~['book']
+        page = $~['page']
+        
+        o[tune_title_of[]] << {book: book.gsub(' ', ''), page: page}
+        
+      else
+        # should be the first fragment of a long title
+        seperated_tune_title = line.chomp('') + ' '
       end
     end
     o
@@ -98,9 +107,9 @@ module BigFakeCdIndex
         end
         .map do |tune, books|
           page = books.find{|book| book[:book] == realbook}[:page]
-          [page, tune]
+          [tune, page]
         end
-        .sort_by do |page, tune|
+        .sort_by do |tune, page|
           next page.to_i if page =~ /^[0-9]+$/
           # appendix
           10000 + page.sub('A', '').to_i
@@ -110,7 +119,7 @@ module BigFakeCdIndex
     end.to_h
   end
   
-  def display_info(indexes, io: $stdout)
+  def verbose(indexes, io: $stdout)
     begin
       realbooks = indexes.values.flatten.map{|i| i[:book]}.uniq.sort
       io.puts 
@@ -178,12 +187,14 @@ task :index_to_yaml, ['setting_yaml'] do |task, args|
 
   setting = YAML.load_file(setting_yaml)
 
-  indexes = BigFakeCdIndex.to_ruby_object(setting[:input])
+  indexes = File.open(setting[:input], "r:utf-8") do |file_io|
+    BigFakeCdIndex.to_ruby_object(file_io)
+  end
 
   output = setting[:output]
   
-  output[:display_info]&.tap do
-    BigFakeCdIndex.display_info(indexes)
+  output[:verbose]&.tap do
+    BigFakeCdIndex.verbose(indexes)
   end
   
   output[:all_indexes]&.tap do |all_indexes|
