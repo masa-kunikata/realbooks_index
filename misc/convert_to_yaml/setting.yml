@@ -1,0 +1,9 @@
+---
+
+:input: index.txt
+
+:output:
+  :all_indexes:      ../../public/all_indexes.yml
+  :indexes_per_book: ../../public/indexes_per_book.yml
+
+  :verbose: yes

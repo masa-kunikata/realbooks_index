@@ -35,7 +35,7 @@ module BigFakeCdIndex
     \Z                                  # before new line
   /x
 
-  CONTINUED_BOOK_REGEX  = /
+  ANOTHER_BOOK_REGEX  = /
     \A
     \.+[ ]?                   # delimiter
     (?<book>#{BOOKS * '|'}?)  # book title
@@ -81,7 +81,7 @@ module BigFakeCdIndex
         
         o[tune_title_of[]] = [{book: book.gsub(' ', ''), page: page}]
 
-      when CONTINUED_BOOK_REGEX
+      when ANOTHER_BOOK_REGEX
         raise 'NO current_tune!' unless current_tune
       
         book = $~['book']
@@ -100,6 +100,12 @@ module BigFakeCdIndex
   def index_per_book(indexes)
     realbooks = indexes.values.flatten.map{|i| i[:book]}.uniq.sort
   
+    to_page_num = ->(page)do
+      return page.to_i if page =~ /^[0-9]+$/
+      # appendix
+      10000 + page.sub('A', '').to_i
+    end
+  
     realbooks.map do |realbook|
       containing_tunes = indexes
         .select do |tune, books|
@@ -109,17 +115,21 @@ module BigFakeCdIndex
           page = books.find{|book| book[:book] == realbook}[:page]
           [tune, page]
         end
-        .sort_by do |tune, page|
-          next page.to_i if page =~ /^[0-9]+$/
-          # appendix
-          10000 + page.sub('A', '').to_i
+        .sort do |(tune_a, page_a), (tune_b, page_b)|
+          p_a = to_page_num[page_a]
+          p_b = to_page_num[page_b]
+          
+          diff_page = p_a <=> p_b
+          next diff_page unless diff_page == 0
+          
+          tune_a <=> tune_b
         end
-    
+        
       [realbook, containing_tunes.to_h]
     end.to_h
   end
   
-  def verbose(indexes, io: $stdout)
+  def verbose(indexes, index_per_book, io: $stdout)
     begin
       realbooks = indexes.values.flatten.map{|i| i[:book]}.uniq.sort
       io.puts 
@@ -175,6 +185,30 @@ module BigFakeCdIndex
       io.puts no_number_page_include.pretty_inspect
       io.puts '--------'
     end
+    
+    begin
+      io.puts 
+      io.puts '-- alias tunes'
+    
+      index_per_book.each do |realbook, containing_tunes|
+        aliases = containing_tunes.select do |tune, page|
+            tune =~ /[\(\)]/
+          end
+          .group_by do |tune, page|
+            page
+          end
+          .select do |page, grouped|
+            next false if grouped.count < 2
+            # true
+            grouped.map(&:first).map{|title| title.chars.sort}.uniq.size == 1
+          end
+        
+        #------
+        io.puts realbook
+        io.puts aliases
+      end
+      io.puts '--------'
+    end
   end
 end
 
@@ -190,11 +224,13 @@ task :index_to_yaml, ['setting_yaml'] do |task, args|
   indexes = File.open(setting[:input], "r:utf-8") do |file_io|
     BigFakeCdIndex.to_ruby_object(file_io)
   end
+  
+  index_per_book = BigFakeCdIndex.index_per_book(indexes)
 
   output = setting[:output]
   
   output[:verbose]&.tap do
-    BigFakeCdIndex.verbose(indexes)
+    BigFakeCdIndex.verbose(indexes, index_per_book)
   end
   
   output[:all_indexes]&.tap do |all_indexes|
@@ -204,7 +240,6 @@ task :index_to_yaml, ['setting_yaml'] do |task, args|
   
   output[:indexes_per_book]&.tap do |indexes_per_book|
     FileUtils.mkdir_p(File.dirname(indexes_per_book))
-    per_book = BigFakeCdIndex.index_per_book(indexes)
-    File.write(indexes_per_book, per_book.to_yaml)
+    File.write(indexes_per_book, index_per_book.to_yaml)
   end
 end
