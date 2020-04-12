@@ -14,7 +14,7 @@ export default new Vuex.Store({
   },
   actions: {
     async load({ commit }){
-      const resp = await axios.get('/all_indexes.yml')
+      const resp = await axios.get(process.env.VUE_APP_PUBLIC_PATH + 'all_indexes.yml')
       const allIndexes = yaml.safeLoad(resp.data);
       commit('setAllIndexes', allIndexes)
     }
