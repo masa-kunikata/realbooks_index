@@ -1,7 +1,6 @@
 <template>
   <div>
-    Tune name <input v-model="query"/>
-    <hr />
+    <v-text-field label="Tune name"  hide-details="auto" v-model="query" />
     <ul>
       <li v-for="(pages, tuneName) in hitList" :key="tuneName">
         {{tuneName}}
@@ -20,13 +19,20 @@ export default {
   name: 'RealbooksIndex',
   data() {
     return {
-      query: 'there ',
       hitList: {},
     }
   },
   computed: {
     allIndexes(){
       return this.$store.getters['allIndexes'];
+    },
+    query: {
+      get(){
+        return this.$store.getters['query']
+      },
+      set(value){
+        this.$store.dispatch('setQuery', value)
+      }
     }
   },
   watch: {

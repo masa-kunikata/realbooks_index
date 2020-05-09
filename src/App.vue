@@ -1,20 +1,17 @@
 <template>
-  <div id="app">
-    <router-view/>
-    <hr />
+  <v-app>
+    <v-content>
+      <router-view/>
+    </v-content>
     <div id="nav">
-      <router-link to="/">Search</router-link> |
-      <router-link to="/about">About</router-link>
+      <v-btn to="/">Search</v-btn>
+      <v-btn to="/about">About</v-btn>
     </div>
-  </div>
+  </v-app>
 </template>
 
 <style lang="scss">
 $realbook-color: #f7f2ca;
-
-body {
-  background-color: $realbook-color;
-}
 
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -22,6 +19,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   // text-align: center;
   color: #2c3e50;
+  background-color: $realbook-color;
+  padding: 10px;
 }
 
 #nav {
