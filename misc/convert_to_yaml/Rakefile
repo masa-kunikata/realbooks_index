@@ -46,7 +46,40 @@ module BigFakeCdIndex
   
   DUPLICATE_TUNE_TITLE = "…"
   
-  
+  TO_PDF_PAGE_PROCS = {
+    'Colorado': ->(page){ page.to_i + 3 },
+    'EvansBk':  ->(page){ page.to_i + 3 },
+    'JazzFake': ->(page){ page.to_i - 1 },
+    'JazzLTD':  ->(page){ page.to_i + 7 },
+    'Library':  ->(page){ page.to_i + 4 },
+    'NewReal1': ->(page){ page.to_i + 15 },
+    'NewReal2': ->(page){ page.to_i + 12 },
+    'NewReal3': ->(page){ page.to_i + 10 },
+    'Realbk1': ->(page)do
+      if /^A(?<additional>[0-9]+)$/ =~ page
+        return additional.to_i + 497
+      end
+      page.to_i + 13
+    end,
+    'Realbk2':  ->(page){ page.to_i + 7 },
+    'Realbk3':  ->(page){ page.to_i + 5 },
+    'TheBook': ->(page)do
+      if page.to_i <= 204
+        return page.to_i + 13
+      end
+      page.to_i + 11
+    end,
+  }
+
+  BOOK_PAGE_FOR = ->(book, page)do
+    book_key = book.gsub(' ', '').to_sym
+    {
+      book: book_key.to_s,
+      page: page,
+      pdf_page: TO_PDF_PAGE_PROCS[book_key][page]
+    }
+  end
+
   module_function
 
   def to_ruby_object(file_io)
@@ -79,7 +112,7 @@ module BigFakeCdIndex
         
         versions_tune = current_tune unless current_tune =~ /^#{DUPLICATE_TUNE_TITLE}/
         
-        o[tune_title_of[]] = [{book: book.gsub(' ', ''), page: page}]
+        o[tune_title_of[]] = [ BOOK_PAGE_FOR[book, page] ]
 
       when ANOTHER_BOOK_REGEX
         raise 'NO current_tune!' unless current_tune
@@ -87,8 +120,10 @@ module BigFakeCdIndex
         book = $~['book']
         page = $~['page']
         
-        o[tune_title_of[]] << {book: book.gsub(' ', ''), page: page}
-        
+        anogher_book_page = BOOK_PAGE_FOR[book, page]
+        tune_title = tune_title_of[]
+
+        o[tune_title] << anogher_book_page unless o[tune_title].include?(anogher_book_page)
       else
         # should be the first fragment of a long title
         seperated_tune_title = line.chomp('') + ' '

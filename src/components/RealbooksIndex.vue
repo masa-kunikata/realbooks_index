@@ -7,7 +7,7 @@
         <ul>
           <li v-for="page in pages" :key="page[':book'] + '_' + page[':page']">
             <span v-if="pdfUrls[page[':book']]">
-              <a :href="pdfUrls[page[':book']] + `#page=${page[':page']}`"> {{page[':book']}} / {{page[':page']}}</a>
+              <a :href="pdfUrls[page[':book']] + `#page=${page[':pdf_page']}`"> {{page[':book']}} / {{page[':page']}}</a>
             </span>
             <span v-else>
               {{page[':book']}} / {{page[':page']}}

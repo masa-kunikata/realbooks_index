@@ -75,3 +75,11 @@ const store = new Vuex.Store({
   }
 })
 ```
+
+PDF url parameters
+
+https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf
+
+
+view=fit はchromeでは有効
+
