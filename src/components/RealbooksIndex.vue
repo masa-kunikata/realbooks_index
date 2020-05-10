@@ -5,8 +5,13 @@
       <li v-for="(pages, tuneName) in hitList" :key="tuneName">
         {{tuneName}}
         <ul>
-          <li v-for="page in pages" :key="page[':book'] + page[':page']">
-            {{page[':book']}} / {{page[':page']}}
+          <li v-for="page in pages" :key="page[':book'] + '_' + page[':page']">
+            <span v-if="pdfUrls[page[':book']]">
+              <a :href="pdfUrls[page[':book']] + `#page=${page[':page']}`"> {{page[':book']}} / {{page[':page']}}</a>
+            </span>
+            <span v-else>
+              {{page[':book']}} / {{page[':page']}}
+            </span>
           </li>
         </ul>
       </li>
@@ -31,9 +36,12 @@ export default {
         return this.$store.getters['query']
       },
       set(value){
-        this.$store.dispatch('setQuery', value)
+        this.$store.dispatch('putQuery', value)
       }
-    }
+    },
+    pdfUrls(){
+      return this.$store.getters['pdfUrls'];
+    },
   },
   watch: {
     query:{

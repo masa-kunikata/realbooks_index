@@ -5,6 +5,7 @@
     </v-content>
     <div id="nav">
       <v-btn to="/">Search</v-btn>
+      <v-btn to="/setting">Setting</v-btn>
       <v-btn to="/about">About</v-btn>
     </div>
   </v-app>

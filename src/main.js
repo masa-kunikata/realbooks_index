@@ -6,7 +6,7 @@ import vuetify from './plugins/vuetify';
 
 Vue.config.productionTip = false
 
-store.dispatch('load')
+store.dispatch('doLoad')
 
 new Vue({
   router,
