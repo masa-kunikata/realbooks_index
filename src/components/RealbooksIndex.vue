@@ -5,12 +5,14 @@
       <li v-for="(pages, tuneName) in hitList" :key="tuneName">
         {{tuneName}}
         <ul>
-          <li v-for="page in pages" :key="page[':book'] + '_' + page[':page']">
+          <li v-for="page in pages"
+            :key="`${page[':book']}_${page[':page']}`"
+            :set="disp = `${page[':book']} / ${page[':page']}`">
             <span v-if="pdfUrls[page[':book']]">
-              <a :href="pdfUrls[page[':book']] + `#page=${page[':pdf_page']}`"> {{page[':book']}} / {{page[':page']}}</a>
+              <a :href="pdfUrls[page[':book']] + `#page=${page[':pdf_page']}`">{{ disp }}</a>
             </span>
             <span v-else>
-              {{page[':book']}} / {{page[':page']}}
+              {{ disp }}
             </span>
           </li>
         </ul>
