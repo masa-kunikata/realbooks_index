@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-text-field label="Tune name"  hide-details="auto" v-model="query" />
+    <v-text-field label="Search"  hide-details="auto" v-model="query" />
     <ul>
       <li v-for="(pages, tuneName) in hitList" :key="tuneName">
         {{tuneName}}
