@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import yaml from 'js-yaml'
 import axios from 'axios'
+import createPersistedState from "vuex-persistedstate";
 
 const downloadAllIndexes = async () => {
   const resp = await axios.get(process.env.VUE_APP_PUBLIC_PATH + 'all_indexes.yml')
@@ -35,23 +36,11 @@ export default new Vuex.Store({
     setAllIndexes: (state, payload) => state.allIndexes = payload,
     setQuery: (state, payload) => state.query = payload,
     setPdfUrls: (state, payload) => state.pdfUrls = payload,
-    save(state) {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state))
-    },
-    load(state) {
-      const storeJson = localStorage.getItem(LOCAL_STORAGE_KEY)
-      if (!storeJson) return;
-      const store = JSON.parse(storeJson)
-      this.replaceState(Object.assign(state, store))
-    }
   },
   actions: {
     putQuery({ commit }, query){ commit('setQuery', query) },
     putPdfUrls({ commit }, pdfUrls){ commit('setPdfUrls', pdfUrls) },
-    doSave({ commit }) { commit('save') },
     async doLoad({ state, commit }, reload = false){
-      commit('load')
-
       if (!state.allIndexes || reload) {
         const allIndexes = await downloadAllIndexes();
         commit('setAllIndexes', allIndexes)
@@ -63,6 +52,13 @@ export default new Vuex.Store({
     query: state => state.query,
     pdfUrls: state => state.pdfUrls,
   },
-  modules: {
-  }
+  plugins: [createPersistedState({
+    key: LOCAL_STORAGE_KEY,
+    paths: [
+      'allIndexes',
+      'query',
+      'pdfUrls',
+    ],
+    storage: window.localStorage
+  })]
 })

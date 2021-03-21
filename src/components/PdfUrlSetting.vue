@@ -1,6 +1,5 @@
 <template>
   <div>
-    <v-btn @click="savePdfUrlSetting">save to localStorage</v-btn>
     <h3>pdf url setting</h3><br />
     <ul>
       <li v-for="bookTitle in Object.keys(pdfUrls)" :key="bookTitle">
@@ -39,11 +38,6 @@ export default {
       set(value){
         this.$store.dispatch('putPdfUrls', value)
       }
-    }
-  },
-  methods: {
-    savePdfUrlSetting() {
-      this.$store.dispatch('doSave')
     }
   },
 }
