@@ -16,7 +16,8 @@
   "dependencies": {
     "pinia": "^2.1.6",
     "vue": "^3.3.4",
-    "vue-router": "^4.2.4"
+    "vue-router": "^4.2.4",
+    "vuetify": "^3.3.21"
   },
   "devDependencies": {
     "@nightwatch/vue": "0.4.5",
