@@ -52,3 +52,12 @@ https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/pdf_open_parameter
 
 view=fit はchromeでは有効
 
+
+
+```
+    "vue": "^2.6.11",
+    "vue-router": "^3.1.6",
+    "vuetify": "^2.6.10",
+    "vuex": "^3.1.3",
+    "vuex-persistedstate": "^4.0.0-beta.3"
+```
