@@ -55,19 +55,15 @@
   </v-app>
 </template>
 
-<script>
-  export default {
-    data: () => ({
-      drawer: null,
-      items: [
-        { icon: 'mdi-magnify', text: 'Search', to: '/' },
-        { icon: 'mdi-cog', text: 'Setting', to: '/setting' },
-        { icon: 'mdi-information-outline', text: 'About', to: '/about' },
-      ],
-    }),
-  }
+<script setup lang="ts">
+import { ref } from "vue"
+const drawer = ref(false)
+const items = [
+  { icon: 'mdi-magnify', text: 'Search', to: '/' },
+  { icon: 'mdi-cog', text: 'Setting', to: '/setting' },
+  { icon: 'mdi-information-outline', text: 'About', to: '/about' },
+]
 </script>
-
 
 <style lang="scss">
 $realbook-color: #f7f2ca;
@@ -75,8 +71,5 @@ $realbook-color: #f7f2ca;
 #app {
   color: #2c3e50;
   background-color: $realbook-color;
-
-  // background-color: var(--v-primary-base);
-  // //color="amber lighten-5"
 }
 </style>
