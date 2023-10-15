@@ -19,17 +19,6 @@ const query = computed({
   set(newValue: string) { realbooksIndexesStore.query = newValue }
 })
 
-watch(
-  () => (query.value),
-  (newQuery) => { search(newQuery) },
-  { immediate: true }
-)
-watch(
-  () => (allIndexes.value),
-  () => { search(query.value) },
-  { immediate: true }
-)
-
 const search = (query: string) => {
   if (!query) {
     hitList.value = {};
@@ -58,10 +47,21 @@ const search = (query: string) => {
 
   hitList.value = {}
 }
+
+watch(
+  () => (query.value),
+  (newQuery) => { search(newQuery) },
+  { immediate: true }
+)
+watch(
+  () => (allIndexes.value),
+  () => { search(query.value) },
+  { immediate: true }
+)
 </script>
 
 <template>
-  <div>
+  <div class="wrap">
     <v-text-field label="Search" hide-details="auto" v-model="query" />
     <ul>
       <li v-for="(pages, tuneName) in hitList" :key="tuneName">
@@ -84,6 +84,9 @@ const search = (query: string) => {
 </template>
 
 <style scoped lang="scss">
+.wrap {
+  padding-top: 100px;
+}
 h3 {
   margin: 40px 0 0;
 }
