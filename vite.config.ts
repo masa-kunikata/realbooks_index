@@ -7,7 +7,7 @@ import nightwatchPlugin from 'vite-plugin-nightwatch'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/',
+  base: '/realbooks_index/',
   plugins: [
     vue(),
     vuetify({ autoImport: true }),
