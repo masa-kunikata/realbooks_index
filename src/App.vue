@@ -57,12 +57,16 @@
 
 <script setup lang="ts">
 import { ref } from "vue"
+import { useRealbooksIndexesStore } from "@/stores/realbooksIndexes"
+
 const drawer = ref(false)
 const items = [
   { icon: 'mdi-magnify', text: 'Search', to: '/' },
   { icon: 'mdi-cog', text: 'Setting', to: '/setting' },
   { icon: 'mdi-information-outline', text: 'About', to: '/about' },
 ]
+const realbooksIndexesStore = useRealbooksIndexesStore()
+realbooksIndexesStore.doLoad()
 </script>
 
 <style lang="scss">

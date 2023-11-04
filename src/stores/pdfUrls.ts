@@ -18,25 +18,29 @@ export type PdfUrls = {
   TheBook: string
 }
 
-export const usePdfUrlsStore = defineStore('pdfUrls', () => {
-  const pdfUrls: Ref<PdfUrls> = ref({
-    Colorado: '',
-    EvansBk: '',
-    JazzFake: '',
-    JazzLTD: '',
-    Library: '',
-    NewReal1: '',
-    NewReal2: '',
-    NewReal3: '',
-    Realbk1: '',
-    Realbk2: '',
-    Realbk3: '',
-    TheBook: ''
-  })
+export const usePdfUrlsStore = defineStore(
+  'pdfUrls',
+  () => {
+    const pdfUrls: Ref<PdfUrls> = ref({
+      Colorado: '',
+      EvansBk: '',
+      JazzFake: '',
+      JazzLTD: '',
+      Library: '',
+      NewReal1: '',
+      NewReal2: '',
+      NewReal3: '',
+      Realbk1: '',
+      Realbk2: '',
+      Realbk3: '',
+      TheBook: ''
+    })
 
-  const putPdfUrls = (newValue: any) => {
-    pdfUrls.value = newValue
-  }
+    const putPdfUrls = (newValue: any) => {
+      pdfUrls.value = newValue
+    }
 
-  return { pdfUrls, putPdfUrls }
-})
+    return { pdfUrls, putPdfUrls }
+  },
+  { persist: true }
+)

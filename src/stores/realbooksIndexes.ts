@@ -19,19 +19,23 @@ const downloadAllIndexes = async () => {
   return yaml.parse(resp.data) as AllIndexes
 }
 
-export const useRealbooksIndexesStore = defineStore('realbooksIndexes', () => {
-  const allIndexes: Ref<AllIndexes | null> = ref(null)
-  const query = ref('')
+export const useRealbooksIndexesStore = defineStore(
+  'realbooksIndexes',
+  () => {
+    const allIndexes: Ref<AllIndexes | null> = ref(null)
+    const query = ref('')
 
-  const doLoad = async (reload = false) => {
-    if (!allIndexes.value || reload) {
-      allIndexes.value = await downloadAllIndexes()
+    const doLoad = async (reload = false) => {
+      if (!allIndexes.value || reload) {
+        allIndexes.value = await downloadAllIndexes()
+      }
     }
-  }
 
-  return {
-    allIndexes,
-    query,
-    doLoad
-  }
-})
+    return {
+      allIndexes,
+      query,
+      doLoad
+    }
+  },
+  { persist: true }
+)
