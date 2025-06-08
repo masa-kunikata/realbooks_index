@@ -62,7 +62,7 @@ watch(
 
 <template>
   <div class="wrap">
-    <v-text-field label="Search" hide-details="auto" v-model="query" />
+    <n-input placeholder="Search" v-model:value="query" />
     <ul>
       <li v-for="(pages, tuneName) in hitList" :key="tuneName">
         {{ tuneName }}

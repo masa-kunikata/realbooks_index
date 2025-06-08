@@ -21,7 +21,7 @@ const pdfUrls = computed({
     <h3>pdf url setting</h3><br />
     <ul>
       <li v-for="([bookTitle, url]) in Object.entries(pdfUrls)" :key="bookTitle">
-        <v-text-field :label="bookTitle" hide-details="auto" :value="url" v-model="pdfUrls[bookTitle as keyof PdfUrls]" />
+        <n-input :placeholder="bookTitle" v-model:value="pdfUrls[bookTitle as keyof PdfUrls]" />
       </li>
     </ul>
   </div>
